@@ -1,167 +1,244 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>EyeAble - Student</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EyeAble — Student</title>
   <link rel="stylesheet" href="style.css">
   <style>
-    .logout-btn {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      background-color: #dc3545;
-      padding: 10px 20px;
-      z-index: 1000;
-    }
-    
-    .logout-btn:hover {
-      background-color: #c82333;
-    }
-    
-    .user-info {
-      position: absolute;
-      top: 20px;
-      left: 20px;
-      font-weight: bold;
-      color: #333;
-      background: white;
-      padding: 8px 15px;
-      border-radius: 20px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-      z-index: 1000;
+    .page-body { padding-right: 0; transition: padding-right 0.35s; }
+    .page-body.panel-open { padding-right: 360px; }
+
+    .controls-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      max-width: 1100px;
+      margin: 0 auto 16px;
+      padding: 0 4px;
+      flex-wrap: wrap;
+      gap: 10px;
     }
 
-    .loading {
+    .dwell-control {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 8px 16px;
+    }
+
+    .dwell-control label {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin: 0;
+      white-space: nowrap;
+    }
+
+    input[type="range"] {
+      width: 100px;
+      accent-color: var(--primary);
+    }
+
+    .dwell-val {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--primary-light);
+      min-width: 45px;
+    }
+
+    .answer-section {
+      max-width: 1100px;
+      margin: 0 auto 16px;
+    }
+
+    .answer-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .tracking-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .track-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--text-dim);
+      transition: all 0.3s;
+    }
+    .track-dot.active { background: var(--success); box-shadow: 0 0 8px var(--success); }
+    .track-dot.loading { background: var(--warning); animation: pulse 1s infinite; }
+
+    /* Gaze cursor */
+    #gazeCursor {
       position: fixed;
-      top: 50%;
-      left: 50%;
+      width: 20px; height: 20px;
+      border: 2px solid var(--accent);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9998;
       transform: translate(-50%, -50%);
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-      z-index: 10000;
+      transition: opacity 0.2s;
+      opacity: 0;
     }
-
-    /* Keyboard styles - with larger boxes and proper SPACE/BACK sizing */
-    #keyboard {
-      display: grid;
-      grid-template-columns: repeat(10, 1fr);
-      gap: 12px;
-      max-width: 1200px;
-      margin: 20px auto;
-      padding: 25px;
-      background: #f0f0f0;
-      border-radius: 15px;
-    }
-
-    .key {
-      padding: 25px 10px;
-      font-size: 24px;
-      font-weight: bold;
-      border: 3px solid #444;
-      border-radius: 12px;
-      background: white;
-      cursor: pointer;
-      transition: all 0.2s;
-      min-width: 60px;
-      text-align: center;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-      grid-column: span 1;
-    }
-
-    .key.space-key {
-      grid-column: span 4;
-      background-color: #e8e8e8;
-    }
-
-    .key.back-key {
-      grid-column: span 2;
-      background-color: #ffebeb;
-    }
-
-    .key:hover {
-      background: #e0e0e0;
-      transform: scale(1.05);
-    }
-
-    .key.space-key:hover {
-      background: #d8d8d8;
-    }
-
-    .key.back-key:hover {
-      background: #ffd6d6;
-    }
-
-    .key.active {
-      background: #ffd700;
-      border-color: #ffa500;
-      transform: scale(1.1);
-      box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
-    }
-
-    textarea#output {
-      width: 80%;
-      max-width: 600px;
-      padding: 15px;
-      font-size: 18px;
-      border: 2px solid #ccc;
-      border-radius: 5px;
-      margin: 20px auto;
-      display: block;
-      resize: vertical;
-    }
-
-    button {
-      padding: 12px 30px;
-      font-size: 16px;
-      background: #007bff;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      margin: 10px;
-    }
-
-    button:hover {
-      background: #0056b3;
-    }
-
-    h1, h2, p {
-      text-align: center;
+    #gazeCursor.visible { opacity: 0.7; }
+    #gazeCursor::after {
+      content: '';
+      position: absolute;
+      top: 50%; left: 50%;
+      width: 4px; height: 4px;
+      background: var(--accent);
+      border-radius: 50%;
+      transform: translate(-50%,-50%);
     }
   </style>
 </head>
-<body>
-  <div class="user-info" id="userInfo">Loading user info...</div>
-  <button class="logout-btn" onclick="logout()">Logout</button>
+<body class="page-body" id="pageBody">
 
-  <h1>👁️ EyeAble - Student Portal</h1>
-
-  <h2>Question:</h2>
-  <p id="questionText">Loading question...</p>
-
-  <textarea id="output" rows="3" placeholder="Your answer will appear here..."></textarea>
-
-  <div id="keyboard"></div>
-
-  <br>
-  <div style="text-align: center;">
-    <button onclick="submitAnswer()">Submit Answer</button>
-    <button onclick="clearAnswer()" style="background: #6c757d;">Clear</button>
+  <!-- LOADING OVERLAY -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="loader-ring"></div>
+    <div class="loading-text" id="loadingText">Initializing EyeAble…</div>
   </div>
 
-  <div class="loading" id="loading">Loading eye tracking... Please allow camera access.</div>
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-brand">
+      <div class="logo-dot"></div>
+      EyeAble
+    </div>
+    <div class="topbar-right">
+      <div class="tracking-status">
+        <div class="track-dot loading" id="trackDot"></div>
+        <span id="trackLabel">Initializing camera…</span>
+      </div>
+      <div class="user-chip" id="userChip">
+        <div class="user-avatar" id="userAvatar">?</div>
+        <span id="userName">Loading…</span>
+        <span class="badge badge-primary" style="margin-left:4px;">Student</span>
+      </div>
+      <button class="btn btn-danger btn-sm" onclick="logout()">Sign Out</button>
+    </div>
+  </div>
 
-  <!-- Load Firebase first -->
+  <!-- GAZE CURSOR -->
+  <div id="gazeCursor"></div>
+
+  <!-- MAIN CONTENT -->
+  <div class="student-layout">
+
+    <!-- QUESTION -->
+    <div class="question-card">
+      <div class="question-icon">❓</div>
+      <div>
+        <div class="question-label">Current Question</div>
+        <div class="question-text" id="questionText">Loading question…</div>
+      </div>
+    </div>
+
+    <!-- ANSWER -->
+    <div class="answer-section">
+      <div class="answer-label">Your Answer</div>
+      <textarea class="answer-area" id="output" rows="3" placeholder="Your answer will appear here as you look at letters…"></textarea>
+    </div>
+
+    <!-- CONTROLS -->
+    <div class="controls-bar">
+      <div class="dwell-control">
+        <label>Dwell Time</label>
+        <input type="range" min="300" max="2000" step="100" value="800" id="dwellSlider" oninput="updateDwell(this.value)">
+        <span class="dwell-val" id="dwellVal">0.8s</span>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="submitAnswer()">✓ Submit Answer</button>
+        <button class="btn btn-ghost" onclick="clearAnswer()">✕ Clear</button>
+        <button class="btn btn-ghost btn-sm" onclick="toggleCalibration()">⊕ Calibrate</button>
+      </div>
+    </div>
+
+    <!-- DWELL PROGRESS BAR -->
+    <div class="dwell-bar-wrapper" style="max-width:1100px;margin:4px auto 14px;">
+      <span class="dwell-label" id="dwellBarLabel" style="font-size:11px;color:var(--text-dim);width:160px;flex-shrink:0;">Gazing at: —</span>
+      <div class="dwell-bar-bg" style="flex:1;height:5px;background:var(--bg-card2);border-radius:3px;overflow:hidden;">
+        <div class="dwell-bar-fill" id="dwellBarFill" style="height:100%;width:0%;background:linear-gradient(90deg,var(--primary),var(--accent));border-radius:3px;transition:width 0.05s linear;"></div>
+      </div>
+    </div>
+
+    <!-- KEYBOARD -->
+    <div class="keyboard-wrapper">
+      <div id="keyboard"></div>
+    </div>
+
+  </div>
+
+  <!-- CAMERA LABEL -->
+  <div class="camera-label">📷 Eye Tracking</div>
+
+  <!-- AI ASSISTANT PANEL -->
+  <div class="ai-panel" id="aiPanel">
+    <div class="ai-panel-header">
+      <h3>
+        <div class="ai-status-dot"></div>
+        AI Assistant
+      </h3>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <span class="live-badge"><div class="live-dot"></div> Live</span>
+        <button class="btn btn-ghost btn-sm" onclick="closeAI()" style="padding:4px 8px;">✕</button>
+      </div>
+    </div>
+    <div class="ai-messages" id="aiMessages">
+      <div class="ai-msg assistant">
+        👋 Hi! I'm your AI assistant. I'll watch your typed text and suggest corrections or completions. You can also type a question below!
+      </div>
+    </div>
+    <div class="ai-input-area">
+      <input type="text" id="aiInput" placeholder="Ask me anything…" onkeydown="if(event.key==='Enter') sendAIMessage()">
+      <button class="btn btn-primary btn-sm" onclick="sendAIMessage()">→</button>
+    </div>
+  </div>
+
+  <!-- AI TOGGLE BUTTON -->
+  <button class="ai-toggle-btn" id="aiToggleBtn" onclick="toggleAI()" title="AI Assistant">
+    🤖
+    <div class="ai-badge-dot"></div>
+  </button>
+
+  <!-- CALIBRATION OVERLAY -->
+  <div class="calibration-overlay hidden" id="calOverlay">
+    <div class="calibration-title">👁️ Eye Tracking Calibration</div>
+    <div class="calibration-subtitle">Click each point while looking directly at it. This helps the system learn your eye movements.</div>
+    <div class="calibration-grid" id="calGrid">
+      <!-- Points generated by JS -->
+    </div>
+    <button class="btn btn-primary" onclick="finishCalibration()">Done — Start Typing</button>
+    <button class="btn btn-ghost btn-sm" style="margin-top:8px;" onclick="toggleCalibration()">Skip Calibration</button>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- FIREBASE -->
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-  
-  <!-- Load WebGazer -->
+
+  <!-- WEBGAZER -->
   <script src="https://cdn.jsdelivr.net/npm/webgazer@2.1.0/dist/webgazer.min.js"></script>
-  
+
   <script>
-    // Firebase Configuration
+    // ─── FIREBASE INIT ───────────────────────────────────────────────────
     const firebaseConfig = {
       apiKey: "AIzaSyAvOGMmLgbeZwpVpOAWeH5ilU077uOmz2s",
       authDomain: "eyeable-2026.firebaseapp.com",
@@ -169,107 +246,443 @@
       projectId: "eyeable-2026",
       storageBucket: "eyeable-2026.firebasestorage.app",
       messagingSenderId: "29944050006",
-      appId: "1:29944050006:web:33515697c3aac35432e6f7",
-      measurementId: "G-YMPV5EPEDV"
+      appId: "1:29944050006:web:33515697c3aac35432e6f7"
     };
-
-    // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
-    const database = firebase.database();
+    const db = firebase.database();
+    window.database = db;
 
-    // Make Firebase available globally
-    window.firebase = firebase;
-    window.database = database;
-
-    // Check authentication status
-    auth.onAuthStateChanged((user) => {
-      if (!user) {
-        // No user logged in, redirect to login
-        window.location.href = 'login.html';
-        return;
-      }
-
-      // Check if user is a student
-      database.ref('users/' + user.uid).once('value')
-        .then((snapshot) => {
-          const userData = snapshot.val();
-          
-          // If user data doesn't exist or role is missing, create it with student role
-          if (!userData) {
-            // Create user record with student role
-            return database.ref('users/' + user.uid).set({
-              name: user.displayName || user.email,
-              email: user.email,
-              role: 'student',
-              createdAt: new Date().toISOString()
-            }).then(() => {
-              // Display user info
-              const displayName = user.displayName || user.email;
-              document.getElementById('userInfo').innerText = `Logged in as: ${displayName} (Student)`;
-            });
-          }
-          
-          // Check role
-          if (userData.role !== 'student') {
-            // Wrong role, redirect to appropriate page
-            if (userData.role === 'teacher') {
-              window.location.href = 'teacher.html';
-            } else {
-              // Invalid role, sign out and redirect to login
-              auth.signOut();
-              window.location.href = 'login.html';
-            }
-            return;
-          }
-
-          // Display user info
-          const displayName = userData.name || user.displayName || user.email;
-          document.getElementById('userInfo').innerText = `Logged in as: ${displayName} (Student)`;
-        })
-        .catch((error) => {
-          console.error('Error checking user role:', error);
-          // If error occurs, still show the page but with limited info
-          const displayName = user.displayName || user.email;
-          document.getElementById('userInfo').innerText = `Logged in as: ${displayName}`;
-        });
+    // ─── AUTH ────────────────────────────────────────────────────────────
+    auth.onAuthStateChanged(async user => {
+      if (!user) { window.location.href = 'login.html'; return; }
+      const snap = await db.ref('users/' + user.uid).once('value');
+      const ud = snap.val();
+      if (!ud) {
+        await db.ref('users/' + user.uid).set({ name: user.displayName || user.email, email: user.email, role: 'student', createdAt: new Date().toISOString() });
+      } else if (ud.role === 'teacher') { window.location.href = 'teacher.html'; return; }
+      const name = (ud?.name || user.displayName || user.email).split(' ')[0];
+      document.getElementById('userName').textContent = name;
+      document.getElementById('userAvatar').textContent = name[0].toUpperCase();
     });
 
     function logout() {
-      // Stop webgazer before logging out
-      if (window.webgazer && typeof webgazer.end === 'function') {
-        try {
-          webgazer.end();
-        } catch (e) {
-          console.log('Error stopping webgazer:', e);
-        }
+      try { if (webgazer?.end) webgazer.end(); } catch(e) {}
+      auth.signOut().then(() => { localStorage.clear(); window.location.href = 'login.html'; });
+    }
+
+    // ─── QUESTION ────────────────────────────────────────────────────────
+    function loadQuestion() {
+      db.ref('currentQuestion').on('value', snap => {
+        document.getElementById('questionText').textContent = snap.val() || 'Type the word: CAT';
+      });
+    }
+    loadQuestion();
+
+    // ─── KEYBOARD BUILD ──────────────────────────────────────────────────
+    const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+    const keyboard = document.getElementById('keyboard');
+
+    LETTERS.forEach(l => {
+      const btn = document.createElement('button');
+      btn.textContent = l;
+      btn.className = 'key';
+      btn.dataset.key = l;
+      btn.innerHTML = l + '<div class="dwell-ring"></div>';
+      btn.onclick = () => handleKey(l);
+      keyboard.appendChild(btn);
+    });
+
+    const spaceBtn = document.createElement('button');
+    spaceBtn.innerHTML = 'SPACE<div class="dwell-ring"></div>';
+    spaceBtn.className = 'key space-key';
+    spaceBtn.dataset.key = 'SPACE';
+    spaceBtn.onclick = () => handleKey('SPACE');
+    keyboard.appendChild(spaceBtn);
+
+    const backBtn = document.createElement('button');
+    backBtn.innerHTML = '⌫ BACK<div class="dwell-ring"></div>';
+    backBtn.className = 'key back-key';
+    backBtn.dataset.key = 'BACK';
+    backBtn.onclick = () => handleKey('BACK');
+    keyboard.appendChild(backBtn);
+
+    // ─── KEY HANDLING ────────────────────────────────────────────────────
+    const output = document.getElementById('output');
+
+    function handleKey(label) {
+      if (label === 'SPACE') output.value += ' ';
+      else if (label === 'BACK') output.value = output.value.slice(0, -1);
+      else output.value += label;
+      localStorage.setItem('answer', output.value);
+
+      // Flash animation
+      const btn = [...document.querySelectorAll('.key')].find(b => b.dataset.key === label);
+      if (btn) {
+        btn.classList.add('active');
+        setTimeout(() => btn.classList.remove('active'), 180);
       }
 
-      // Sign out from Firebase
-      auth.signOut().then(() => {
-        // Clear localStorage
-        localStorage.removeItem('question');
-        localStorage.removeItem('answer');
-        // Redirect to login
-        window.location.href = 'login.html';
-      }).catch((error) => {
-        console.error('Logout error:', error);
-        // Force redirect even if signout fails
-        localStorage.clear();
-        window.location.href = 'login.html';
+      // Trigger AI suggestion after short pause
+      clearTimeout(aiSuggestTimer);
+      aiSuggestTimer = setTimeout(() => maybeAISuggest(), 1800);
+    }
+
+    // ─── DWELL TIME ──────────────────────────────────────────────────────
+    let dwellTime = 800;
+    let currentKey = null;
+    let gazeStartTime = null;
+    let typingLocked = false;
+    let aiSuggestTimer = null;
+
+    function updateDwell(val) {
+      dwellTime = parseInt(val);
+      document.getElementById('dwellVal').textContent = (dwellTime / 1000).toFixed(1) + 's';
+    }
+
+    // ─── GAZE SMOOTHING ──────────────────────────────────────────────────
+    let smoothX = null, smoothY = null;
+    const SMOOTH = 0.18;
+    const gazeCursor = document.getElementById('gazeCursor');
+
+    // ─── WEBGAZER INIT ───────────────────────────────────────────────────
+    async function initWebGazer() {
+      try {
+        setLoadingText('Requesting camera access…');
+        if (typeof webgazer === 'undefined') {
+          setTimeout(initWebGazer, 1200);
+          return;
+        }
+
+        setLoadingText('Initializing eye tracking…');
+
+        webgazer
+          .setRegression('ridge')
+          .setTracker('TFFacemesh')
+          .setGazeListener(onGaze)
+          .begin();
+
+        webgazer.showPredictionPoints(false);
+        webgazer.showVideo(true);
+        webgazer.showFaceOverlay(true);
+        webgazer.showFaceFeedbackBox(false);
+        webgazer.params.videoMirror = false;
+
+        document.getElementById('trackDot').classList.remove('loading');
+        document.getElementById('trackDot').classList.add('active');
+        document.getElementById('trackLabel').textContent = 'Eye tracking active';
+
+        setTimeout(styleVideoContainer, 2000);
+        setTimeout(hideLoading, 3500);
+
+      } catch(e) {
+        console.error('WebGazer error:', e);
+        setLoadingText('Camera unavailable — using click mode');
+        document.getElementById('trackLabel').textContent = 'Click mode (no camera)';
+        setTimeout(hideLoading, 2000);
+      }
+    }
+
+    function onGaze(data) {
+      if (!data || data.x == null) return;
+
+      // Smooth
+      if (smoothX === null) { smoothX = data.x; smoothY = data.y; }
+      smoothX += SMOOTH * (data.x - smoothX);
+      smoothY += SMOOTH * (data.y - smoothY);
+
+      // Move gaze cursor
+      gazeCursor.style.left = smoothX + 'px';
+      gazeCursor.style.top = smoothY + 'px';
+      gazeCursor.classList.add('visible');
+
+      const allKeys = document.querySelectorAll('.key');
+      let hoveredKey = null;
+
+      allKeys.forEach(key => {
+        const r = key.getBoundingClientRect();
+        if (smoothX >= r.left && smoothX <= r.right && smoothY >= r.top && smoothY <= r.bottom) {
+          hoveredKey = key;
+        }
+        key.classList.remove('gazing', 'dwelling');
+      });
+
+      const barFill = document.getElementById('dwellBarFill');
+      const barLabel = document.getElementById('dwellBarLabel');
+
+      if (hoveredKey) {
+        hoveredKey.classList.add('gazing');
+
+        if (currentKey === hoveredKey) {
+          const elapsed = Date.now() - gazeStartTime;
+          const progress = Math.min(elapsed / dwellTime * 100, 100);
+          barFill.style.width = progress + '%';
+          barLabel.textContent = 'Gazing at: ' + (hoveredKey.dataset.key || hoveredKey.textContent.trim());
+
+          if (elapsed > dwellTime * 0.3) hoveredKey.classList.add('dwelling');
+
+          if (elapsed >= dwellTime && !typingLocked) {
+            typingLocked = true;
+            hoveredKey.classList.add('active');
+            handleKey(hoveredKey.dataset.key);
+            setTimeout(() => { hoveredKey.classList.remove('active'); }, 180);
+            setTimeout(() => { typingLocked = false; }, 600);
+            gazeStartTime = Date.now() + 200;
+            barFill.style.width = '0%';
+          }
+        } else {
+          currentKey = hoveredKey;
+          gazeStartTime = Date.now();
+          barFill.style.width = '0%';
+        }
+      } else {
+        currentKey = null;
+        gazeStartTime = null;
+        barFill.style.width = '0%';
+        barLabel.textContent = 'Gazing at: —';
+      }
+    }
+
+    function styleVideoContainer() {
+      const vc = document.getElementById('webgazerVideoContainer');
+      if (!vc) return;
+      vc.style.cssText = 'position:fixed!important;bottom:100px!important;left:20px!important;top:auto!important;width:200px!important;height:150px!important;z-index:9999!important;overflow:hidden!important;border:1.5px solid rgba(255,255,255,0.1)!important;border-radius:14px!important;background:#000!important;box-shadow:0 4px 20px rgba(0,0,0,0.5)!important;';
+      const video = vc.querySelector('video');
+      if (video) video.style.cssText = 'width:100%!important;height:100%!important;object-fit:cover!important;position:absolute!important;top:50%!important;left:50%!important;transform:translate(-50%,-50%)!important;';
+      vc.querySelectorAll('canvas').forEach(c => {
+        c.style.cssText = 'width:100%!important;height:100%!important;position:absolute!important;top:50%!important;left:50%!important;transform:translate(-50%,-50%)!important;pointer-events:none!important;';
       });
     }
 
-    // Hide loading when page is loaded
-    window.addEventListener('load', function() {
-      setTimeout(() => {
-        const loading = document.getElementById('loading');
-        if (loading) loading.style.display = 'none';
-      }, 3000);
-    });
-  </script>
+    function setLoadingText(t) { document.getElementById('loadingText').textContent = t; }
 
-  <!-- Load script.js - ONLY ONCE -->
-  <script src="script.js"></script>
+    function hideLoading() {
+      document.getElementById('loadingOverlay').classList.add('hidden');
+    }
+
+    // ─── CALIBRATION ─────────────────────────────────────────────────────
+    let calPoints = 0;
+    function buildCalGrid() {
+      const grid = document.getElementById('calGrid');
+      grid.innerHTML = '';
+      for (let i = 0; i < 9; i++) {
+        const pt = document.createElement('div');
+        pt.className = 'cal-point';
+        pt.onclick = function() {
+          this.classList.add('clicked');
+          calPoints++;
+          if (typeof webgazer !== 'undefined') {
+            const r = this.getBoundingClientRect();
+            webgazer.recordScreenPosition(r.left + r.width/2, r.top + r.height/2);
+          }
+        };
+        grid.appendChild(pt);
+      }
+    }
+
+    function toggleCalibration() {
+      const overlay = document.getElementById('calOverlay');
+      const hidden = overlay.classList.contains('hidden');
+      if (hidden) { buildCalGrid(); calPoints = 0; }
+      overlay.classList.toggle('hidden', !hidden);
+    }
+
+    function finishCalibration() {
+      document.getElementById('calOverlay').classList.add('hidden');
+      toast('Calibration complete! Eye tracking is now optimised.', 'success');
+    }
+
+    // ─── SUBMIT / CLEAR ──────────────────────────────────────────────────
+    function submitAnswer() {
+      const answer = output.value.trim();
+      if (!answer) { toast('Please type an answer first', 'error'); return; }
+      const user = auth.currentUser;
+      if (!user) { toast('Please log in first', 'error'); return; }
+
+      db.ref('answers').push({
+        text: answer,
+        studentId: user.uid,
+        studentEmail: user.email,
+        studentName: user.displayName || user.email,
+        timestamp: Date.now(),
+        question: document.getElementById('questionText').textContent
+      }).then(() => {
+        toast('Answer submitted successfully! ✓', 'success');
+      }).catch(() => {
+        toast('Saved locally — sync failed', 'error');
+      });
+    }
+
+    function clearAnswer() {
+      output.value = '';
+      localStorage.removeItem('answer');
+      document.getElementById('dwellBarFill').style.width = '0%';
+    }
+
+    // Load saved answer
+    const saved = localStorage.getItem('answer');
+    if (saved) output.value = saved;
+
+    // ─── TOAST ───────────────────────────────────────────────────────────
+    function toast(msg, type = 'info') {
+      const c = document.getElementById('toastContainer');
+      const t = document.createElement('div');
+      t.className = 'toast ' + type;
+      const icons = { success: '✓', error: '✗', info: 'ℹ' };
+      t.textContent = (icons[type] || '') + ' ' + msg;
+      c.appendChild(t);
+      setTimeout(() => t.remove(), 3200);
+    }
+
+    // ─── AI ASSISTANT (GROQ) ─────────────────────────────────────────────
+    const GROQ_API = 'gsk_J6BWcFQCcDVsFRTX7ZVWGdyb3FYlNsxmoeUvENZLiWUqdin3C7N';
+    let aiOpen = false;
+    let aiHistory = [];
+
+    function toggleAI() {
+      aiOpen = !aiOpen;
+      document.getElementById('aiPanel').classList.toggle('open', aiOpen);
+      document.getElementById('pageBody').classList.toggle('panel-open', aiOpen);
+      if (aiOpen && aiHistory.length === 0) {
+        addAIMessage('assistant', "👋 Hi! I'm watching your answer. Start typing and I'll suggest words or corrections. You can also ask me anything!");
+      }
+    }
+
+    function closeAI() {
+      aiOpen = false;
+      document.getElementById('aiPanel').classList.remove('open');
+      document.getElementById('pageBody').classList.remove('panel-open');
+    }
+
+    function addAIMessage(role, content, pills = []) {
+      const container = document.getElementById('aiMessages');
+      const div = document.createElement('div');
+      div.className = 'ai-msg ' + role;
+      div.textContent = content;
+      if (pills.length > 0) {
+        const pillRow = document.createElement('div');
+        pillRow.className = 'ai-suggestion-pills';
+        pills.forEach(p => {
+          const pill = document.createElement('button');
+          pill.className = 'ai-pill';
+          pill.textContent = p;
+          pill.onclick = () => {
+            output.value = p;
+            localStorage.setItem('answer', p);
+            toast('Applied: ' + p, 'success');
+          };
+          pillRow.appendChild(pill);
+        });
+        div.appendChild(pillRow);
+      }
+      container.appendChild(div);
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function showTyping() {
+      const container = document.getElementById('aiMessages');
+      const t = document.createElement('div');
+      t.className = 'ai-typing';
+      t.id = 'aiTypingIndicator';
+      t.innerHTML = '<span></span><span></span><span></span>';
+      container.appendChild(t);
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function hideTyping() {
+      const t = document.getElementById('aiTypingIndicator');
+      if (t) t.remove();
+    }
+
+    async function callGroq(messages) {
+      const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + GROQ_API
+        },
+        body: JSON.stringify({
+          model: 'llama3-8b-8192',
+          messages,
+          max_tokens: 200,
+          temperature: 0.5
+        })
+      });
+      const data = await resp.json();
+      return data.choices?.[0]?.message?.content || '';
+    }
+
+    async function maybeAISuggest() {
+      const text = output.value.trim();
+      if (!text || text.length < 2) return;
+      if (!aiOpen) return;
+
+      showTyping();
+      const question = document.getElementById('questionText').textContent;
+      try {
+        const response = await callGroq([
+          { role: 'system', content: 'You are an AI assistant helping a student using eye-gaze typing. The student may have typos or incomplete words. Given their typed text and the question, suggest 2-3 corrected/completed versions. Reply with ONLY a JSON object like: {"message":"Did you mean one of these?","suggestions":["word1","word2","word3"]} — no extra text.' },
+          { role: 'user', content: `Question: "${question}"\nTyped so far: "${text}"` }
+        ]);
+
+        hideTyping();
+        try {
+          const parsed = JSON.parse(response.trim());
+          addAIMessage('assistant', parsed.message || 'Did you mean:', parsed.suggestions || []);
+        } catch {
+          addAIMessage('assistant', response);
+        }
+      } catch(e) {
+        hideTyping();
+        console.error('Groq error:', e);
+      }
+    }
+
+    async function sendAIMessage() {
+      const input = document.getElementById('aiInput');
+      const msg = input.value.trim();
+      if (!msg) return;
+      input.value = '';
+      addAIMessage('user', msg);
+
+      aiHistory.push({ role: 'user', content: msg });
+      showTyping();
+
+      try {
+        const sysPrompt = `You are a friendly AI assistant embedded in EyeAble, an eye-gaze typing app for students. The student is typing: "${output.value}". Help them communicate effectively. Be concise and encouraging.`;
+        const messages = [{ role: 'system', content: sysPrompt }, ...aiHistory.slice(-6)];
+        const reply = await callGroq(messages);
+        hideTyping();
+        aiHistory.push({ role: 'assistant', content: reply });
+        addAIMessage('assistant', reply);
+      } catch(e) {
+        hideTyping();
+        addAIMessage('assistant', 'Sorry, I had trouble connecting. Please check your internet.');
+      }
+    }
+
+    // ─── INIT ─────────────────────────────────────────────────────────────
+    window.addEventListener('load', () => {
+      setTimeout(initWebGazer, 800);
+    });
+
+    window.addEventListener('beforeunload', () => {
+      try { if (webgazer?.end) webgazer.end(); } catch(e) {}
+    });
+
+    window.addEventListener('resize', () => { smoothX = null; smoothY = null; });
+
+    // Expose globals
+    window.handleKey = handleKey;
+    window.submitAnswer = submitAnswer;
+    window.clearAnswer = clearAnswer;
+    window.toggleCalibration = toggleCalibration;
+    window.finishCalibration = finishCalibration;
+    window.toggleAI = toggleAI;
+    window.closeAI = closeAI;
+    window.sendAIMessage = sendAIMessage;
+    window.logout = logout;
+    window.updateDwell = updateDwell;
+  </script>
 </body>
 </html>

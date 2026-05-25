@@ -1,144 +1,397 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Teacher Dashboard</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EyeAble — Teacher Dashboard</title>
   <link rel="stylesheet" href="style.css">
   <style>
-    .logout-btn {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      background-color: #dc3545;
-      padding: 10px 20px;
-      z-index: 1000;
+    .question-editor {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      margin-bottom: 24px;
     }
-    
-    .logout-btn:hover {
-      background-color: #c82333;
-    }
-    
-    .user-info {
-      position: absolute;
-      top: 20px;
-      left: 20px;
-      font-weight: bold;
-      color: #333;
-      background: white;
-      padding: 8px 15px;
-      border-radius: 20px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-      z-index: 1000;
-    }
-    
-    .container {
-      max-width: 800px;
-      margin: 80px auto 20px;
-      padding: 20px;
-    }
-    
-    #questionInput {
-      width: 100%;
-      padding: 15px;
+
+    .question-editor textarea {
       font-size: 18px;
-      border: 2px solid #ccc;
-      border-radius: 10px;
-      margin-bottom: 20px;
-      resize: vertical;
+      font-family: 'Sora', sans-serif;
+      min-height: 80px;
+      margin-bottom: 14px;
+      resize: none;
     }
-    
-    .student-answer {
+
+    .question-editor-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .latest-answer-card {
+      background: linear-gradient(135deg, rgba(0,229,190,0.08), rgba(91,110,245,0.05));
+      border: 1.5px solid rgba(0,229,190,0.25);
+      border-radius: var(--radius-lg);
+      padding: 20px 24px;
+      margin-bottom: 24px;
+    }
+
+    .latest-answer-text {
+      font-family: 'Sora', sans-serif;
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: 0.08em;
+      min-height: 44px;
+    }
+
+    .answers-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 500px;
+      overflow-y: auto;
+    }
+
+    .no-answers {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-dim);
+    }
+
+    .answer-card-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .search-input {
+      background: var(--bg-card2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 8px 14px;
+      font-size: 13px;
+      width: 220px;
+    }
+
+    .tab-pills {
+      display: flex;
+      gap: 6px;
+      background: var(--bg-card2);
+      border-radius: var(--radius-sm);
+      padding: 4px;
+      width: fit-content;
+    }
+
+    .tab-pill {
+      padding: 7px 16px;
+      border: none;
+      background: none;
+      color: var(--text-muted);
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border-radius: 6px;
+      transition: all 0.2s;
+    }
+
+    .tab-pill.active { background: var(--primary); color: white; }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .ai-evaluate-btn {
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      border: none;
+      border-radius: var(--radius-sm);
+      color: white;
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+      font-family: 'Space Grotesk', sans-serif;
+    }
+
+    .ai-evaluate-btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
+
+    .ai-feedback-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 10px;
+      border-radius: 100px;
+      font-size: 11px;
+      font-weight: 600;
+      margin-top: 6px;
+    }
+
+    .ai-feedback-chip.correct { background: rgba(0,200,150,0.15); color: var(--success); border: 1px solid rgba(0,200,150,0.3); }
+    .ai-feedback-chip.partial { background: rgba(255,176,32,0.15); color: var(--warning); border: 1px solid rgba(255,176,32,0.3); }
+    .ai-feedback-chip.incorrect { background: rgba(255,77,109,0.15); color: var(--danger); border: 1px solid rgba(255,77,109,0.3); }
+
+    .settings-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+    }
+
+    .settings-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .settings-row:last-child { border-bottom: none; }
+
+    .settings-row-label { font-size: 14px; font-weight: 600; }
+    .settings-row-desc { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+    .toggle-switch {
+      width: 44px; height: 24px;
+      background: var(--bg-card2);
+      border: 1.5px solid var(--border);
+      border-radius: 100px;
+      cursor: pointer;
+      position: relative;
+      transition: background 0.2s;
+    }
+
+    .toggle-switch.on { background: var(--primary); border-color: var(--primary); }
+
+    .toggle-switch::after {
+      content: '';
+      position: absolute;
+      width: 16px; height: 16px;
       background: white;
-      padding: 20px;
-      border-radius: 10px;
-      border: 2px solid #28a745;
-      min-height: 100px;
-      font-size: 18px;
-      margin-top: 20px;
-      white-space: pre-wrap;
-      word-wrap: break-word;
-    }
-    
-    .refresh-btn {
-      background-color: #007bff;
-      margin-left: 10px;
-    }
-    
-    .refresh-btn:hover {
-      background-color: #0056b3;
+      border-radius: 50%;
+      top: 3px; left: 3px;
+      transition: transform 0.2s;
     }
 
-    .answers-container {
-      margin-top: 30px;
+    .toggle-switch.on::after { transform: translateX(20px); }
+
+    .question-history {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 16px;
     }
 
-    .answer-card {
-      background: white;
-      padding: 15px;
-      border-radius: 10px;
-      border: 1px solid #ddd;
-      margin-bottom: 10px;
-      text-align: left;
+    .history-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg-card2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: border-color 0.2s;
     }
 
-    .answer-card strong {
-      color: #28a745;
-    }
-
-    .answer-card small {
-      color: #666;
-      display: block;
-      margin-top: 5px;
-    }
-
-    .stats {
-      background: #f8f9fa;
-      padding: 15px;
-      border-radius: 10px;
-      margin-bottom: 20px;
-    }
-
-    .clear-btn {
-      background-color: #dc3545;
-      margin-left: 10px;
-    }
-
-    .clear-btn:hover {
-      background-color: #c82333;
-    }
+    .history-item:hover { border-color: var(--primary); }
   </style>
 </head>
 <body>
-  <div class="user-info" id="userInfo">Loading user info...</div>
-  <button class="logout-btn" onclick="logout()">Logout</button>
-  
-  <div class="container">
-    <h1>👩‍🏫 Teacher Dashboard</h1>
 
-    <div class="stats" id="stats">
-      Loading statistics...
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="loader-ring"></div>
+    <div class="loading-text">Loading Teacher Dashboard…</div>
+  </div>
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-brand">
+      <div class="logo-dot"></div>
+      EyeAble
     </div>
-
-    <textarea id="questionInput" placeholder="Enter question here (e.g., Type the word: CAT)" rows="4">Type the word: CAT</textarea>
-    <br>
-    <button onclick="saveQuestion()">Save Question</button>
-    <button class="refresh-btn" onclick="loadAnswers()">Refresh Answers</button>
-    <button class="clear-btn" onclick="clearAllAnswers()">Clear All Answers</button>
-
-    <h2>Current Student Answer:</h2>
-    <div class="student-answer" id="currentStudentAnswer">No answer yet</div>
-
-    <div class="answers-container">
-      <h2>All Student Answers:</h2>
-      <div id="allAnswers">Loading answers...</div>
+    <div class="topbar-right">
+      <span class="live-badge"><div class="live-dot"></div> Live</span>
+      <div class="user-chip" id="userChip">
+        <div class="user-avatar" id="userAvatar">T</div>
+        <span id="userName">Teacher</span>
+        <span class="badge badge-warning" style="margin-left:4px;">Teacher</span>
+      </div>
+      <button class="btn btn-danger btn-sm" onclick="logout()">Sign Out</button>
     </div>
   </div>
+
+  <!-- MAIN LAYOUT -->
+  <div class="teacher-layout">
+
+    <!-- PAGE TITLE -->
+    <div style="margin-bottom:28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+      <div>
+        <h1 style="font-size:28px;font-weight:800;letter-spacing:-0.02em;">Teacher Dashboard</h1>
+        <p style="color:var(--text-muted);font-size:14px;margin-top:4px;">Monitor students, manage questions, and view live answers.</p>
+      </div>
+      <div class="tab-pills">
+        <button class="tab-pill active" onclick="switchView('overview')">Overview</button>
+        <button class="tab-pill" onclick="switchView('answers')">Answers</button>
+        <button class="tab-pill" onclick="switchView('settings')">Settings</button>
+      </div>
+    </div>
+
+    <!-- STATS GRID -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-value" id="statTotal">0</div>
+        <div class="stat-label">Total Answers</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="statStudents">0</div>
+        <div class="stat-label">Active Students</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="statToday">0</div>
+        <div class="stat-label">Answers Today</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="statAvgLen">—</div>
+        <div class="stat-label">Avg Answer Length</div>
+      </div>
+    </div>
+
+    <!-- ═══ OVERVIEW VIEW ═══ -->
+    <div id="viewOverview">
+      <!-- Question Editor -->
+      <div class="question-editor">
+        <div class="section-title">✏️ Current Question</div>
+        <textarea id="questionInput" placeholder="Enter a question for students (e.g. Type the word: CAT)">Type the word: CAT</textarea>
+        <div class="question-editor-actions">
+          <button class="btn btn-primary" onclick="saveQuestion()">💾 Publish Question</button>
+          <button class="btn btn-ghost" onclick="clearQuestion()">✕ Clear</button>
+          <span id="saveStatus" style="font-size:12px;color:var(--text-dim);"></span>
+        </div>
+      </div>
+
+      <!-- Latest Answer -->
+      <div class="latest-answer-card">
+        <div class="section-title">⚡ Latest Answer</div>
+        <div class="latest-answer-text" id="latestAnswer">Waiting for student response…</div>
+        <div style="display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap;">
+          <span style="font-size:12px;color:var(--text-muted);" id="latestMeta"></span>
+          <button class="ai-evaluate-btn" onclick="evaluateLatest()" id="evalBtn" style="display:none;">
+            🤖 AI Evaluate
+          </button>
+        </div>
+        <div id="latestAIResult"></div>
+      </div>
+
+      <!-- Question History -->
+      <div class="card" style="margin-bottom:24px;">
+        <div class="section-title">📋 Quick Question Templates</div>
+        <div class="question-history" id="questionTemplates">
+          <div class="history-item" onclick="setQuestion('Type the word: CAT')">
+            <span>Type the word: CAT</span><span style="color:var(--text-dim);font-size:11px;">Template</span>
+          </div>
+          <div class="history-item" onclick="setQuestion('Spell your first name')">
+            <span>Spell your first name</span><span style="color:var(--text-dim);font-size:11px;">Template</span>
+          </div>
+          <div class="history-item" onclick="setQuestion('Type: YES or NO')">
+            <span>Type: YES or NO</span><span style="color:var(--text-dim);font-size:11px;">Template</span>
+          </div>
+          <div class="history-item" onclick="setQuestion('What color do you like best?')">
+            <span>What color do you like best?</span><span style="color:var(--text-dim);font-size:11px;">Template</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ ANSWERS VIEW ═══ -->
+    <div id="viewAnswers" style="display:none;">
+      <div class="card">
+        <div class="section-header">
+          <div class="section-title" style="margin-bottom:0;">📬 All Student Answers</div>
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+            <input type="text" class="search-input" id="searchInput" placeholder="🔍 Search answers…" oninput="filterAnswers()">
+            <button class="btn btn-ghost btn-sm" onclick="loadAnswers()">↻ Refresh</button>
+            <button class="btn btn-danger btn-sm" onclick="clearAllAnswers()">🗑 Clear All</button>
+          </div>
+        </div>
+        <div class="answers-list" id="allAnswers">
+          <div class="no-answers">
+            <div style="font-size:40px;margin-bottom:12px;">📭</div>
+            <p>No answers yet. Students will appear here when they submit.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ SETTINGS VIEW ═══ -->
+    <div id="viewSettings" style="display:none;">
+      <div class="settings-card">
+        <div class="section-title">⚙️ Dashboard Settings</div>
+
+        <div class="settings-row">
+          <div>
+            <div class="settings-row-label">Auto-refresh answers</div>
+            <div class="settings-row-desc">Automatically refresh the answers list every 5 seconds</div>
+          </div>
+          <div class="toggle-switch on" id="autoRefreshToggle" onclick="toggleSetting('autoRefresh', this)"></div>
+        </div>
+
+        <div class="settings-row">
+          <div>
+            <div class="settings-row-label">Real-time notifications</div>
+            <div class="settings-row-desc">Show a notification when a student submits a new answer</div>
+          </div>
+          <div class="toggle-switch on" id="notifToggle" onclick="toggleSetting('notifications', this)"></div>
+        </div>
+
+        <div class="settings-row">
+          <div>
+            <div class="settings-row-label">AI Auto-evaluation</div>
+            <div class="settings-row-desc">Automatically evaluate answers using AI when they arrive</div>
+          </div>
+          <div class="toggle-switch" id="aiAutoToggle" onclick="toggleSetting('aiAuto', this)"></div>
+        </div>
+
+        <div class="settings-row" style="border-bottom:none;">
+          <div>
+            <div class="settings-row-label">Export answers</div>
+            <div class="settings-row-desc">Download all answers as a CSV file</div>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="exportCSV()">⬇ Export CSV</button>
+        </div>
+      </div>
+
+      <div class="settings-card" style="margin-top:20px;">
+        <div class="section-title">🔑 Account</div>
+        <div class="settings-row">
+          <div>
+            <div class="settings-row-label" id="settingsEmail">—</div>
+            <div class="settings-row-desc">Logged in as Teacher</div>
+          </div>
+          <button class="btn btn-danger btn-sm" onclick="logout()">Sign Out</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
 
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-
   <script>
-    // Firebase Configuration
     const firebaseConfig = {
       apiKey: "AIzaSyAvOGMmLgbeZwpVpOAWeH5ilU077uOmz2s",
       authDomain: "eyeable-2026.firebaseapp.com",
@@ -146,232 +399,282 @@
       projectId: "eyeable-2026",
       storageBucket: "eyeable-2026.firebasestorage.app",
       messagingSenderId: "29944050006",
-      appId: "1:29944050006:web:33515697c3aac35432e6f7",
-      measurementId: "G-YMPV5EPEDV"
+      appId: "1:29944050006:web:33515697c3aac35432e6f7"
     };
-
-    // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
-    const database = firebase.database();
+    const db = firebase.database();
 
-    // Check authentication status
-    auth.onAuthStateChanged((user) => {
-      if (!user) {
-        // No user logged in, redirect to login
-        window.location.href = 'login.html';
+    const GROQ_API = 'gsk_J6BWcFQCcDVsFRTX7ZVWGdyb3FYlNsxmoeUvENZLiWUqdin3C7N';
+
+    let allAnswersData = [];
+    let settings = { autoRefresh: true, notifications: true, aiAuto: false };
+    let refreshInterval = null;
+
+    // ─── AUTH ──────────────────────────────────────────────────────────
+    auth.onAuthStateChanged(async user => {
+      if (!user) { window.location.href = 'login.html'; return; }
+      const snap = await db.ref('users/' + user.uid).once('value');
+      const ud = snap.val();
+      if (!ud || ud.role !== 'teacher') {
+        if (ud?.role === 'student') window.location.href = 'index.html';
+        else { auth.signOut(); window.location.href = 'login.html'; }
         return;
       }
+      const name = ud.name || user.displayName || user.email;
+      document.getElementById('userName').textContent = name.split(' ')[0];
+      document.getElementById('userAvatar').textContent = name[0].toUpperCase();
+      document.getElementById('settingsEmail').textContent = user.email;
 
-      // Check if user is a teacher
-      database.ref('users/' + user.uid).once('value')
-        .then((snapshot) => {
-          const userData = snapshot.val();
-          if (!userData || userData.role !== 'teacher') {
-            // Wrong role or no role, redirect to appropriate page
-            if (userData && userData.role === 'student') {
-              window.location.href = 'index.html';
-            } else {
-              // No role assigned, redirect to login
-              auth.signOut();
-              window.location.href = 'login.html';
-            }
-            return;
-          }
-
-          // Display user info
-          const displayName = userData.name || user.displayName || user.email;
-          document.getElementById('userInfo').innerText = `Logged in as: ${displayName} (Teacher)`;
-          
-          // Load existing question
-          loadExistingQuestion();
-          
-          // Load answers
-          loadAnswers();
-          
-          // Set up real-time listener for answers
-          setupAnswersListener();
-        })
-        .catch((error) => {
-          console.error('Error checking user role:', error);
-        });
+      loadExistingQuestion();
+      loadAnswers();
+      setupRealtime();
+      document.getElementById('loadingOverlay').classList.add('hidden');
+      startAutoRefresh();
     });
 
-    // Load existing question
+    function logout() {
+      auth.signOut().then(() => { localStorage.clear(); window.location.href = 'login.html'; });
+    }
+
+    // ─── VIEW SWITCHING ───────────────────────────────────────────────
+    function switchView(view) {
+      ['overview','answers','settings'].forEach(v => {
+        document.getElementById('view' + v.charAt(0).toUpperCase() + v.slice(1)).style.display = v === view ? 'block' : 'none';
+      });
+      document.querySelectorAll('.tab-pill').forEach((btn, i) => {
+        btn.classList.toggle('active', ['overview','answers','settings'][i] === view);
+      });
+      if (view === 'answers') loadAnswers();
+    }
+
+    // ─── QUESTION ────────────────────────────────────────────────────
     function loadExistingQuestion() {
-      database.ref('currentQuestion').once('value')
-        .then((snapshot) => {
-          const question = snapshot.val();
-          if (question) {
-            document.getElementById('questionInput').value = question;
-          } else {
-            // Try localStorage as fallback
-            const savedQuestion = localStorage.getItem('question');
-            if (savedQuestion) {
-              document.getElementById('questionInput').value = savedQuestion;
-            }
-          }
-        })
-        .catch((error) => {
-          console.error('Error loading question:', error);
-        });
+      db.ref('currentQuestion').on('value', snap => {
+        const q = snap.val();
+        if (q) document.getElementById('questionInput').value = q;
+      });
     }
 
     function saveQuestion() {
-      const question = document.getElementById("questionInput").value;
-      
-      // Save to Firebase
-      database.ref('currentQuestion').set(question)
-        .then(() => {
-          // Also save to localStorage as backup
-          localStorage.setItem("question", question);
-          alert("Question Saved! Students will now see: " + question);
-        })
-        .catch((error) => {
-          console.error('Error saving question:', error);
-          alert("Error saving question. Please try again.");
-        });
+      const q = document.getElementById('questionInput').value.trim();
+      if (!q) { toast('Please enter a question first', 'error'); return; }
+      db.ref('currentQuestion').set(q).then(() => {
+        document.getElementById('saveStatus').textContent = '✓ Published at ' + new Date().toLocaleTimeString();
+        toast('Question published to all students!', 'success');
+      }).catch(() => toast('Failed to save question', 'error'));
     }
 
+    function clearQuestion() {
+      document.getElementById('questionInput').value = '';
+    }
+
+    function setQuestion(q) {
+      document.getElementById('questionInput').value = q;
+      switchView('overview');
+      saveQuestion();
+    }
+
+    // ─── ANSWERS ─────────────────────────────────────────────────────
     function loadAnswers() {
-      // Load the most recent answer (for backward compatibility)
-      database.ref('answers').orderByKey().limitToLast(1).once('value')
-        .then((snapshot) => {
-          const answers = snapshot.val();
-          if (answers) {
-            // Get the most recent answer
-            const latestAnswerKey = Object.keys(answers).pop();
-            const latestAnswer = answers[latestAnswerKey];
-            document.getElementById('currentStudentAnswer').innerText = 
-              latestAnswer.text || "No answer yet";
-          } else {
-            // Fallback to localStorage
-            const localAnswer = localStorage.getItem("answer");
-            document.getElementById('currentStudentAnswer').innerText = localAnswer || "No answer yet";
-          }
-        })
-        .catch((error) => {
-          console.error('Error loading answers:', error);
-          // Fallback to localStorage
-          const localAnswer = localStorage.getItem("answer");
-          document.getElementById('currentStudentAnswer').innerText = localAnswer || "No answer yet";
-        });
-
-      // Load all answers for display
-      loadAllAnswers();
-      updateStats();
+      db.ref('answers').orderByChild('timestamp').once('value').then(snap => {
+        const raw = snap.val();
+        if (!raw) { allAnswersData = []; renderAnswers([]); updateStats([]); return; }
+        allAnswersData = Object.entries(raw).map(([k, v]) => ({ id: k, ...v })).sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+        renderAnswers(allAnswersData);
+        updateStats(allAnswersData);
+        updateLatest(allAnswersData[0]);
+      });
     }
 
-    function loadAllAnswers() {
-      database.ref('answers').once('value')
-        .then((snapshot) => {
-          const answers = snapshot.val();
-          const allAnswersDiv = document.getElementById('allAnswers');
-          
-          if (!answers) {
-            allAnswersDiv.innerHTML = '<p>No answers yet</p>';
-            return;
-          }
-
-          // Convert to array and sort by timestamp (newest first)
-          const answersArray = Object.entries(answers).map(([key, value]) => ({
-            id: key,
-            ...value
-          })).sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-
-          let html = '';
-          answersArray.forEach(answer => {
-            const date = answer.timestamp ? new Date(answer.timestamp).toLocaleString() : 'Unknown date';
-            const studentName = answer.studentName || answer.studentEmail || 'Unknown student';
-            
-            html += `
-              <div class="answer-card">
-                <strong>${studentName}</strong>
-                <p>${answer.text || ''}</p>
-                <small>Submitted: ${date}</small>
+    function renderAnswers(data) {
+      const container = document.getElementById('allAnswers');
+      if (!data.length) {
+        container.innerHTML = `<div class="no-answers"><div style="font-size:40px;margin-bottom:12px;">📭</div><p>No answers yet.</p></div>`;
+        return;
+      }
+      container.innerHTML = data.map(a => {
+        const date = a.timestamp ? new Date(a.timestamp).toLocaleString() : 'Unknown';
+        const name = a.studentName || a.studentEmail || 'Unknown Student';
+        const initial = name[0].toUpperCase();
+        return `
+          <div class="answer-card" id="card-${a.id}">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+              <div style="width:32px;height:32px;background:linear-gradient(135deg,var(--primary),var(--accent));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:white;flex-shrink:0;">${initial}</div>
+              <div>
+                <div class="student-name">${name}</div>
+                <div class="answer-meta">${a.question || ''}</div>
               </div>
-            `;
-          });
-
-          allAnswersDiv.innerHTML = html;
-        })
-        .catch((error) => {
-          console.error('Error loading all answers:', error);
-          document.getElementById('allAnswers').innerHTML = '<p>Error loading answers</p>';
-        });
+            </div>
+            <div class="answer-text">${a.text || ''}</div>
+            <div class="answer-card-actions">
+              <button class="btn btn-ghost btn-sm" onclick="aiEvaluate('${a.id}', '${(a.text||'').replace(/'/g, "\\'")}', '${(a.question||'').replace(/'/g, "\\'")}')">🤖 AI Evaluate</button>
+              <button class="btn btn-danger btn-sm" onclick="deleteAnswer('${a.id}')">🗑</button>
+            </div>
+            <div id="eval-${a.id}" style="margin-top:6px;"></div>
+            <div style="margin-top:6px;font-size:11px;color:var(--text-dim);">${date}</div>
+          </div>
+        `;
+      }).join('');
     }
 
-    function updateStats() {
-      database.ref('answers').once('value')
-        .then((snapshot) => {
-          const answers = snapshot.val();
-          const totalAnswers = answers ? Object.keys(answers).length : 0;
-          
-          // Get unique students
-          const uniqueStudents = new Set();
-          if (answers) {
-            Object.values(answers).forEach(answer => {
-              if (answer.studentId) uniqueStudents.add(answer.studentId);
-            });
-          }
-
-          document.getElementById('stats').innerHTML = `
-            <strong>Statistics:</strong><br>
-            Total Answers: ${totalAnswers}<br>
-            Active Students: ${uniqueStudents.size}
-          `;
-        })
-        .catch((error) => {
-          console.error('Error updating stats:', error);
-        });
+    function filterAnswers() {
+      const q = document.getElementById('searchInput').value.toLowerCase();
+      const filtered = allAnswersData.filter(a =>
+        (a.text||'').toLowerCase().includes(q) ||
+        (a.studentName||'').toLowerCase().includes(q) ||
+        (a.studentEmail||'').toLowerCase().includes(q)
+      );
+      renderAnswers(filtered);
     }
 
-    function setupAnswersListener() {
-      // Listen for new answers in real-time
-      database.ref('answers').on('child_added', () => {
-        loadAllAnswers();
-        updateStats();
-        loadAnswers(); // Update current answer
+    function updateLatest(latest) {
+      if (!latest) return;
+      document.getElementById('latestAnswer').textContent = latest.text || '—';
+      document.getElementById('latestMeta').textContent = `${latest.studentName || latest.studentEmail} · ${latest.timestamp ? new Date(latest.timestamp).toLocaleString() : ''}`;
+      document.getElementById('evalBtn').style.display = 'flex';
+      document.getElementById('evalBtn').dataset.answer = latest.text;
+      document.getElementById('evalBtn').dataset.question = latest.question;
+    }
+
+    function updateStats(data) {
+      document.getElementById('statTotal').textContent = data.length;
+      const uniqueStudents = new Set(data.map(a => a.studentId).filter(Boolean));
+      document.getElementById('statStudents').textContent = uniqueStudents.size;
+      const today = new Date().toDateString();
+      const todayCount = data.filter(a => a.timestamp && new Date(a.timestamp).toDateString() === today).length;
+      document.getElementById('statToday').textContent = todayCount;
+      const avgLen = data.length ? Math.round(data.reduce((s, a) => s + (a.text?.length || 0), 0) / data.length) : 0;
+      document.getElementById('statAvgLen').textContent = avgLen || '—';
+    }
+
+    function deleteAnswer(id) {
+      if (!confirm('Delete this answer?')) return;
+      db.ref('answers/' + id).remove().then(() => {
+        toast('Answer deleted', 'info');
+        loadAnswers();
       });
     }
 
     function clearAllAnswers() {
-      if (confirm('Are you sure you want to clear all answers? This cannot be undone.')) {
-        database.ref('answers').remove()
-          .then(() => {
-            localStorage.removeItem('answer');
-            document.getElementById('currentStudentAnswer').innerText = 'No answer yet';
-            document.getElementById('allAnswers').innerHTML = '<p>No answers yet</p>';
-            updateStats();
-            alert('All answers cleared successfully');
-          })
-          .catch((error) => {
-            console.error('Error clearing answers:', error);
-            alert('Error clearing answers. Please try again.');
-          });
-      }
-    }
-
-    function logout() {
-      auth.signOut().then(() => {
-        // Clear login data but keep question
-        localStorage.removeItem('isLoggedIn');
-        localStorage.removeItem('username');
-        localStorage.removeItem('role');
-        
-        // Redirect to login
-        window.location.href = 'login.html';
-      }).catch((error) => {
-        console.error('Logout error:', error);
-        // Force redirect even if signout fails
-        localStorage.clear();
-        window.location.href = 'login.html';
+      if (!confirm('Clear ALL answers? This cannot be undone.')) return;
+      db.ref('answers').remove().then(() => {
+        toast('All answers cleared', 'info');
+        loadAnswers();
+        document.getElementById('latestAnswer').textContent = 'Waiting for student response…';
+        document.getElementById('latestMeta').textContent = '';
+        document.getElementById('evalBtn').style.display = 'none';
       });
     }
 
-    // Load answers initially and set up periodic refresh
-    loadAnswers();
-    setInterval(loadAnswers, 5000); // Refresh every 5 seconds
+    // ─── REALTIME ────────────────────────────────────────────────────
+    function setupRealtime() {
+      db.ref('answers').on('child_added', (snap) => {
+        const a = snap.val();
+        if (settings.notifications) toast(`New answer from ${a.studentName || a.studentEmail}: "${a.text}"`, 'success');
+        loadAnswers();
+      });
+    }
+
+    function startAutoRefresh() {
+      if (refreshInterval) clearInterval(refreshInterval);
+      if (settings.autoRefresh) refreshInterval = setInterval(loadAnswers, 5000);
+    }
+
+    // ─── AI EVALUATION ───────────────────────────────────────────────
+    async function aiEvaluate(id, answer, question) {
+      const container = document.getElementById('eval-' + id);
+      container.innerHTML = '<span style="font-size:12px;color:var(--text-dim);">🤖 Evaluating…</span>';
+
+      try {
+        const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + GROQ_API },
+          body: JSON.stringify({
+            model: 'llama3-8b-8192',
+            messages: [
+              { role: 'system', content: 'You are an AI evaluating a student\'s gaze-typed answer. They may have typos. Evaluate if the answer is correct for the question. Reply ONLY with JSON: {"status":"correct"|"partial"|"incorrect","feedback":"brief feedback","score":0-100}' },
+              { role: 'user', content: `Question: "${question}"\nStudent Answer: "${answer}"` }
+            ],
+            max_tokens: 150,
+            temperature: 0.3
+          })
+        });
+        const data = await resp.json();
+        const result = JSON.parse(data.choices[0].message.content.trim());
+        container.innerHTML = `
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <span class="ai-feedback-chip ${result.status}">${result.status === 'correct' ? '✓ Correct' : result.status === 'partial' ? '~ Partial' : '✗ Incorrect'} · ${result.score}/100</span>
+            <span style="font-size:12px;color:var(--text-muted);">${result.feedback}</span>
+          </div>`;
+      } catch(e) {
+        container.innerHTML = '<span style="font-size:12px;color:var(--danger);">AI evaluation failed</span>';
+      }
+    }
+
+    async function evaluateLatest() {
+      const btn = document.getElementById('evalBtn');
+      const answer = btn.dataset.answer;
+      const question = btn.dataset.question;
+      const container = document.getElementById('latestAIResult');
+      container.innerHTML = '<span style="font-size:13px;color:var(--text-dim);">🤖 Evaluating…</span>';
+
+      try {
+        const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + GROQ_API },
+          body: JSON.stringify({
+            model: 'llama3-8b-8192',
+            messages: [
+              { role: 'system', content: 'You are an AI evaluating a student\'s gaze-typed answer. Reply ONLY with JSON: {"status":"correct"|"partial"|"incorrect","feedback":"brief feedback","score":0-100}' },
+              { role: 'user', content: `Question: "${question}"\nAnswer: "${answer}"` }
+            ],
+            max_tokens: 150, temperature: 0.3
+          })
+        });
+        const data = await resp.json();
+        const result = JSON.parse(data.choices[0].message.content.trim());
+        container.innerHTML = `
+          <div style="margin-top:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <span class="ai-feedback-chip ${result.status}">${result.status === 'correct' ? '✓ Correct' : result.status === 'partial' ? '~ Partial' : '✗ Incorrect'} · ${result.score}/100</span>
+            <span style="font-size:13px;color:var(--text-muted);">${result.feedback}</span>
+          </div>`;
+      } catch(e) {
+        container.innerHTML = '<span style="font-size:13px;color:var(--danger);">AI evaluation failed — check API key</span>';
+      }
+    }
+
+    // ─── SETTINGS ────────────────────────────────────────────────────
+    function toggleSetting(key, el) {
+      settings[key] = !settings[key];
+      el.classList.toggle('on', settings[key]);
+      if (key === 'autoRefresh') startAutoRefresh();
+    }
+
+    function exportCSV() {
+      if (!allAnswersData.length) { toast('No answers to export', 'error'); return; }
+      const rows = [['Student', 'Email', 'Question', 'Answer', 'Timestamp']];
+      allAnswersData.forEach(a => {
+        rows.push([a.studentName || '', a.studentEmail || '', a.question || '', a.text || '', a.timestamp ? new Date(a.timestamp).toISOString() : '']);
+      });
+      const csv = rows.map(r => r.map(v => '"' + String(v).replace(/"/g, '""') + '"').join(',')).join('\n');
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'eyeable_answers.csv'; a.click();
+      toast('CSV exported!', 'success');
+    }
+
+    // ─── TOAST ───────────────────────────────────────────────────────
+    function toast(msg, type = 'info') {
+      const c = document.getElementById('toastContainer');
+      const t = document.createElement('div');
+      t.className = 'toast ' + type;
+      const icons = { success: '✓', error: '✗', info: 'ℹ' };
+      t.textContent = (icons[type] || '') + ' ' + msg;
+      c.appendChild(t);
+      setTimeout(() => t.remove(), 3500);
+    }
   </script>
 </body>
 </html>
